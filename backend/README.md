@@ -68,8 +68,8 @@ Con Docker:
 ```sh
 docker run --rm -v $(pwd):/usr/src/app rockodev/transcriber:1 -c "node --env-file=.env 1_find.js"
 ```
-> Se se montó MongoDB con Docker se debe agregar el parámetro `--network="transcriber_backend"`
-> Si es la primera vez que se ejecuta, se pude usar `--parallel` para descargar los videos en paralelo.
+> Si se montó MongoDB con Docker se debe agregar el parámetro `--network="transcriber_backend"`\
+> La primera vez que se ejecuta se pude usar `--parallel` para descargar los videos en paralelo.
 
 ## Proceso Transcribe
 1. Busca un video registrado en la base de datos que no ha sido transcrito aún.
