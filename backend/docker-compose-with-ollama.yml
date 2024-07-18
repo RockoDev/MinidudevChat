@@ -1,0 +1,47 @@
+name: transcriber
+
+services:
+
+  mongodb:
+    image: mongodb/mongodb-atlas-local
+    volumes:
+      - '.mongodb:/data/db'
+    ports:
+      - "${MONGODB_PORT_FORWARD:-}:27017"
+    networks:
+      - backend
+      # - default
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: '${MONGODB_USERNAME:-root}'
+      MONGODB_INITDB_ROOT_PASSWORD: '${MONGODB_PASSWORD:-root}'
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: ["gpu"]
+            count: all
+    volumes:
+      - '.ollama:/root/.ollama'
+    ports:
+      - "${OLLAMA_PORT_FORWARD:-}:11434"
+    networks:
+      - backend
+      # - default
+    restart: unless-stopped
+
+networks:
+  backend:
+    driver: bridge
+  # default:
+  #   external: true
+
+volumes:
+  '.mongodb':
+    driver: local
+  '.ollama':
+    driver: local

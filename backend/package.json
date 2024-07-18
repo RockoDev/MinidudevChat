@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/openai": "^0.0.36",
+    "@langchain/community": "^0.2.19",
+    "ai": "^3.2.22",
+    "dayjs": "^1.11.11",
+    "minimist": "^1.2.8",
+    "mongodb": "^6.8.0",
+    "ollama": "^0.5.2",
+    "ollama-ai-provider": "^0.10.0",
+    "openai": "^4.47.1"
+  }
+}

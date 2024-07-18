@@ -1,0 +1,7 @@
+.DS_Store
+.env
+.mongodb
+.ollama
+.data
+.temp
+node_modules
