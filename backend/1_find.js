@@ -16,9 +16,63 @@ if ( !process.env.MONGO_CONNECTION_URL ) {
   throw new Error('MONGO_CONNECTION_URL environment variable is required')
 }
 
-const AUDIOS_DIRECTORY = getAudiosDirectory('twitch')
+const PLATFORM = (argv.platform ?? 'youtube').toLowerCase()
+if ( !['youtube', 'twitch'].includes(PLATFORM) ) {
+  throw new Error(`Invalid platform: ${PLATFORM}`)
+}
+
+const AUDIOS_DIRECTORY = getAudiosDirectory(PLATFORM)
 if ( !fs.existsSync(AUDIOS_DIRECTORY) ) {
   fs.mkdirSync(AUDIOS_DIRECTORY, { recursive: true })
+}
+
+const getYouTubeVideos = async () => {
+  const response = await fetch('https://www.youtube.com/@midulive/videos')
+  const html = await response.text()
+  const json = JSON.parse(html?.split?.("ytInitialData = ")?.[1]?.split?.(";</script>")?.[0] ?? null)
+  return json?.contents?.twoColumnBrowseResultsRenderer?.tabs?.find(tab => tab.tabRenderer?.selected)?.tabRenderer?.content?.richGridRenderer?.contents?.map?.(item => {
+    const video = item.richItemRenderer?.content?.videoRenderer
+    if ( !video ) return null
+    const [ hours = 0, minutes = 0, seconds = 0 ] = video?.lengthText?.simpleText?.split?.(':')?.map?.(n => Number(n)) ?? []
+    return {
+      id: video?.videoId,
+      platform: 'youtube',
+      title: video?.title?.runs?.map?.(run => run.text)?.join?.('') ?? '',
+      published_at: video?.publishedTimeText?.simpleText,
+      duration_text: video?.lengthText?.simpleText?.split?.(':')?.map?.(n => n?.padStart?.(2, '0'))?.join?.(':') ?? '00:00:00',
+      duration: (hours * 3600) + (minutes * 60) + seconds,
+      url: `https://www.youtube.com/watch?v=${video?.videoId}`,
+    }
+  })?.filter?.(i => i !== null) ?? []
+}
+
+const getTwitchVideos = async () => {
+  const { stdout } = await exec('twitch-dl videos midudev --all')
+  return stdout
+    ?.split?.('\n\n\n')
+    ?.filter?.(r => !r.startsWith('-----'))
+    ?.map?.(data => {
+      let [id, title, category, meta, url] = data.trim().split('\n')
+      const [_, date, time, hours, minutes] = meta.match(/Published (\d{4}-\d{2}-\d{2}) @ (\d{2}:\d{2}:\d{2})  Length: (\d+) h (\d+) min/) ?? []
+      return {
+        id: id.replace('Video ', ''),
+        platform: 'twitch',
+        title,
+        category: category.split(' playing ')?.[1]?.trim?.() ?? '',
+        published_at: `${date}T${time}`,
+        duration: `${hours.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`,
+        url,
+      }
+    }) ?? []
+}
+
+const getVideos = platform => {
+  if ( platform === 'youtube' ) {
+    return getYouTubeVideos()
+  } else if ( platform === 'twitch' ) {
+    return getTwitchVideos()
+  }
+  throw new Error(`Invalid platform: ${platform}`)
 }
 
 // const response = await fetch('https://www.twitch.tv/midudev/videos?filter=all&sort=time')
@@ -29,28 +83,47 @@ if ( !fs.existsSync(AUDIOS_DIRECTORY) ) {
 // const items = json?.['@graph']?.filter?.(d => d['@type'] === 'ItemList')?.[0]?.itemListElement ?? []
 // console.log(items)
 
-const { stdout } = await exec('twitch-dl videos midudev --all')
-const results = stdout
-  .split('\n\n\n')
-  .filter(r => !r.startsWith('-----'))
-  .map(data => {
-    let [id, title, category, meta, url] = data.trim().split('\n')
-    const [_, date, time, hours, minutes] = meta.match(/Published (\d{4}-\d{2}-\d{2}) @ (\d{2}:\d{2}:\d{2})  Length: (\d+) h (\d+) min/) ?? []
-    return {
-      id: id.replace('Video ', ''),
-      platform: 'twitch',
-      title,
-      category: category.split(' playing ')?.[1]?.trim?.() ?? '',
-      published_at: `${date}T${time}`,
-      duration: `${hours.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`,
-      url,
-    }
-  })
-
-const downloadResult = async (result, collection, logging = true) => {
+const downloadYouTubeVideo = async (result, collection, logging = true) => {
   try {
     const documentExists = await collection.countDocuments({
       id: result.id,
+      platform: result.platform,
+    }) > 0
+    if ( documentExists ) {
+      if ( logging ) console.log(`    Already exists. Skipping...`)
+      return
+    }
+    if ( logging ) console.log(`    Downloading...`)
+    const { stdout } = await exec(`yt-dlp -x --audio-quality 0 --audio-format wav -f "ba" -o ${AUDIOS_DIRECTORY}/${result.id}.wav ${result.id}`)
+    const sourceOutput = stdout?.trim?.()?.split?.('\n')?.find?.(l => l.startsWith('[ExtractAudio] Destination:'))?.split?.('[ExtractAudio] Destination: ')?.[1] ?? null
+    if ( !sourceOutput ) throw new Error('Downloaded file not found')
+    if ( logging ) console.log(`    Saving to database...`)
+    await collection.updateOne({
+      id: result.id,
+      platform: result.platform,
+    }, {
+      $setOnInsert: {
+        created_at: dayjs().utc().toDate(),
+      },
+      $set: {
+        ...result,
+        updated_at: dayjs().utc().toDate(),
+        duration: Math.floor(parseFloat(result.duration) * 100) / 100,
+      },
+    }, {
+      upsert: true,
+    })
+    if ( logging ) console.log(`    Done!`)
+  } catch ( err ) {
+    console.error(err)
+  }
+}
+
+const downloadTwitchVideo = async (result, collection, logging = true) => {
+  try {
+    const documentExists = await collection.countDocuments({
+      id: result.id,
+      platform: result.platform,
     }) > 0
     if ( documentExists ) {
       if ( logging ) console.log(`    Already exists. Skipping...`)
@@ -60,7 +133,7 @@ const downloadResult = async (result, collection, logging = true) => {
     const { stdout } = await exec(`twitch-dl download -o ${AUDIOS_DIRECTORY}/${result.id}.source.{format} -q audio_only --overwrite ${result.url}`)
     const sourceOutput = stdout?.trim?.()?.split?.('\n')?.find?.(l => l.startsWith('Output: '))?.split?.('Output: ')?.[1] ?? null
     if ( !sourceOutput ) throw new Error('Downloaded file not found')
-      if ( logging ) console.log(`    Extracting audio...`)
+    if ( logging ) console.log(`    Extracting audio...`)
     await exec(`ffmpeg -y -i ${sourceOutput} ${AUDIOS_DIRECTORY}/${result.id}.wav`)
     if ( logging ) console.log(`    Deleting temporal file...`)
     fs.promises.unlink(sourceOutput)
@@ -69,6 +142,7 @@ const downloadResult = async (result, collection, logging = true) => {
     if ( logging ) console.log(`    Saving to database...`)
     await collection.updateOne({
       id: result.id,
+      platform: result.platform,
     }, {
       $setOnInsert: {
         created_at: dayjs().utc().toDate(),
@@ -87,20 +161,41 @@ const downloadResult = async (result, collection, logging = true) => {
   }
 }
 
+const downloadVideo = (result, collection, logging = true) => {
+  if ( result.platform === 'youtube' ) {
+    return downloadYouTubeVideo(result, collection, logging)
+  } else if ( result.platform === 'twitch' ) {
+    return downloadTwitchVideo(result, collection, logging)
+  }
+  throw new Error(`Invalid platform: ${platform}`)
+}
+
+const results = await getVideos(PLATFORM)
+
 const mongodb = await MongoClient.connect(process.env.MONGO_CONNECTION_URL)
 const collection = mongodb.db('midudev').collection('videos')
 
 if ( argv.parallel ) {
   // Running in parallel
+  const progress = {
+    pending: results.length,
+    downloading: 0,
+    downloaded: 0,
+    total: results.length,
+  }
   await Promise.all(results.map(async (result, index) => {
     console.log(`[+] (${index+1}/${results.length}) ${result.title}`)
-    await downloadResult(result, collection, false)
+    progress.pending--
+    progress.downloading++
+    await downloadVideo(result, collection, false)
+    progress.downloading--
+    progress.downloaded++
   }))
 } else {
   // Running in sequence
   for ( const [index, result] of Object.entries(results) ) {
     console.log(`[+] (${Number(index)+1}/${results.length}) ${result.title}`)
-    await downloadResult(result, collection, true)
+    await downloadVideo(result, collection, true)
   }
 }
 
