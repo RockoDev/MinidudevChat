@@ -9,7 +9,7 @@ services:
     ports:
       - "${MONGODB_PORT_FORWARD:-}:27017"
     networks:
-      - backend
+      - services
       # - default
     environment:
       MONGODB_INITDB_ROOT_USERNAME: '${MONGODB_USERNAME:-root}'
@@ -30,12 +30,12 @@ services:
     ports:
       - "${OLLAMA_PORT_FORWARD:-}:11434"
     networks:
-      - backend
+      - services
       # - default
     restart: unless-stopped
 
 networks:
-  backend:
+  services:
     driver: bridge
   # default:
   #   external: true
