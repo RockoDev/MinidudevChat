@@ -66,7 +66,8 @@ node --env-file=.env 1_find.js
 ```
 Parámetros:
 > - `--platform` Default: "youtube". Los valores pueden ser "youtube" o "twitch", y definine en que plataforma se buscarán nuevos videos.
-> - `--parallel` La primera vez que se ejecuta se pude agregar este parámetro para descargar los videos en paralelo.
+> - `--parallel` La primera vez que se ejecuta se puede agregar este parámetro para descargar los videos en paralelo.
+
 Con Docker:
 ```sh
 docker run --rm -v $(pwd):/usr/src/app rockodev/transcriber:1 -c "node --env-file=.env 1_find.js"

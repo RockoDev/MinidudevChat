@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import { MongoClient } from 'mongodb'
 import minimist from 'minimist'
+import cliProgress from 'cli-progress'
 import { getAudiosDirectory } from './config.js'
 
 dayjs.extend(utc)
@@ -85,18 +86,15 @@ const getVideos = platform => {
 
 const downloadYouTubeVideo = async (result, collection, logging = true) => {
   try {
-    const documentExists = await collection.countDocuments({
-      id: result.id,
-      platform: result.platform,
-    }) > 0
-    if ( documentExists ) {
-      if ( logging ) console.log(`    Already exists. Skipping...`)
-      return
+    const fileExists = fs.existsSync(`${AUDIOS_DIRECTORY}/${result.id}.wav`)
+    if ( fileExists ) {
+      if ( logging ) console.log(`    Audio file already exists. Skipping downloading...`)
+    } else {
+      if ( logging ) console.log(`    Downloading...`)
+      const { stdout } = await exec(`yt-dlp -x --audio-quality 0 --audio-format wav -f "ba" -o ${AUDIOS_DIRECTORY}/${result.id}.wav ${result.id}`)
+      const sourceOutput = stdout?.trim?.()?.split?.('\n')?.find?.(l => l.startsWith('[ExtractAudio] Destination:'))?.split?.('[ExtractAudio] Destination: ')?.[1] ?? null
+      if ( !sourceOutput ) throw new Error('Downloaded file not found')
     }
-    if ( logging ) console.log(`    Downloading...`)
-    const { stdout } = await exec(`yt-dlp -x --audio-quality 0 --audio-format wav -f "ba" -o ${AUDIOS_DIRECTORY}/${result.id}.wav ${result.id}`)
-    const sourceOutput = stdout?.trim?.()?.split?.('\n')?.find?.(l => l.startsWith('[ExtractAudio] Destination:'))?.split?.('[ExtractAudio] Destination: ')?.[1] ?? null
-    if ( !sourceOutput ) throw new Error('Downloaded file not found')
     if ( logging ) console.log(`    Saving to database...`)
     await collection.updateOne({
       id: result.id,
@@ -183,14 +181,23 @@ if ( argv.parallel ) {
     downloaded: 0,
     total: results.length,
   }
-  await Promise.all(results.map(async (result, index) => {
-    console.log(`[+] (${index+1}/${results.length}) ${result.title}`)
-    progress.pending--
-    progress.downloading++
+  const progressBar = new cliProgress.SingleBar({
+    format: 'Descargando datos |{bar}| {percentage}% || {value} de {total}',
+    barCompleteChar: '\u2588',
+    barIncompleteChar: '\u2591',
+    hideCursor: true,
+  })
+  progressBar.start(progress.total, progress.downloaded, progress)
+  await Promise.all(results.map(async result => {
+    // progress.pending--
+    // progress.downloading++
+    // progressBar.update(progress.downloaded, progress)
     await downloadVideo(result, collection, false)
-    progress.downloading--
+    // progress.downloading--
     progress.downloaded++
+    progressBar.update(progress.downloaded, progress)
   }))
+  progressBar.stop()
 } else {
   // Running in sequence
   for ( const [index, result] of Object.entries(results) ) {
