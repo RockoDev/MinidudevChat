@@ -20,6 +20,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ["package.json", "package-lock.json", "../"]
 RUN cd .. && npm ci && cd -
 
-COPY ["transcribe.py", "./"]
+COPY ["load_model.py", "transcribe.py", "./"]
+
+RUN python load_model.py
 
 ENTRYPOINT ["/bin/bash"]

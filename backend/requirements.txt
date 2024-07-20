@@ -1,3 +1,4 @@
+python-dotenv
 openai-whisper
 yt-dlp
 twitch-dl
