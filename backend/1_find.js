@@ -33,7 +33,7 @@ const getYouTubeVideos = async () => {
   return json?.contents?.twoColumnBrowseResultsRenderer?.tabs?.find(tab => tab.tabRenderer?.selected)?.tabRenderer?.content?.richGridRenderer?.contents?.map?.(item => {
     const video = item.richItemRenderer?.content?.videoRenderer
     if ( !video ) return null
-    const [ hours = 0, minutes = 0, seconds = 0 ] = video?.lengthText?.simpleText?.split?.(':')?.map?.(n => Number(n)) ?? []
+    const [ seconds = 0, minutes = 0, hours = 0 ] = video?.lengthText?.simpleText?.split?.(':')?.map?.(n => Number(n))?.reverse?.() ?? []
     return {
       id: video?.videoId,
       platform: 'youtube',
