@@ -40,7 +40,6 @@ const getYouTubeVideos = async () => {
       platform: 'youtube',
       title: video?.title?.runs?.map?.(run => run.text)?.join?.('') ?? '',
       published_at: video?.publishedTimeText?.simpleText,
-      duration_text: video?.lengthText?.simpleText?.split?.(':')?.map?.(n => n?.padStart?.(2, '0'))?.join?.(':') ?? '00:00:00',
       duration: (hours * 3600) + (minutes * 60) + seconds,
       url: `https://www.youtube.com/watch?v=${video?.videoId}`,
     }
