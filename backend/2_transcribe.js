@@ -10,13 +10,13 @@ dayjs.extend(utc)
 
 const argv = minimist(process.argv.slice(2))
 
-let COUNT = (argv.count ?? '1').toString().trim().toLowerCase()
-if ( !(/^\d+$/.test(COUNT)) ) {
-  throw new Error(`Invalid --count value: ${COUNT}. Must be a number.`)
+let LIMIT = (argv.limit ?? '1').toString().trim().toLowerCase()
+if ( !(/^\d+$/.test(LIMIT)) ) {
+  throw new Error(`Invalid --limit value: ${LIMIT}. Must be a number.`)
 }
-COUNT = Number(COUNT)
-if ( COUNT <= 0 || COUNT > 1000 ) {
-  throw new Error(`Invalid --count value: ${COUNT}. Must be between 1 and 1000.`)
+LIMIT = Number(LIMIT)
+if ( LIMIT <= 0 || LIMIT > 1000 ) {
+  throw new Error(`Invalid --limit value: ${LIMIT}. Must be between 1 and 1000.`)
 }
 
 if ( !process.env.MONGO_CONNECTION_URL ) {
@@ -40,7 +40,8 @@ const getDurationText = duration => {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-const mongodb = await MongoClient.connect(process.env.MONGO_CONNECTION_URL)
+const mongodb = new MongoClient(process.env.MONGO_CONNECTION_URL)
+await mongodb.connect()
 const db = mongodb.db('midudev')
 const documents = await db.collection('videos').find({
   transcribed_at: { $exists: false },
@@ -57,7 +58,7 @@ const documents = await db.collection('videos').find({
   sort: {
     duration: 1,
   },
-  limit: COUNT,
+  limit: LIMIT,
 }).toArray()
 await mongodb.close()
 
@@ -82,19 +83,6 @@ const transcribe = async document => {
     console.log('    Transcription file not found.')
     return
   }
-  
-  // console.log('    Reading transcription...')
-  // const transcription = JSON.parse(await fs.promises.readFile(output, { encoding: 'utf-8' }))
-  // const paragraphs = []
-  // let paragraph = []
-  // transcription.forEach((segment, index) => {
-  //   const text = segment.text.trim()
-  //   paragraph.push(text)
-  //   if ( transcription.length === (index + 1) || ( text.endsWith('.') && !text.endsWith('...') ) ) {
-  //     paragraphs.push(paragraph.join(' '))
-  //     paragraph = []
-  //   }
-  // })
   
   console.log('    Updating database...')
   try {

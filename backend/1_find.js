@@ -22,13 +22,19 @@ if ( !['youtube', 'twitch'].includes(PLATFORM) ) {
   throw new Error(`Invalid platform: ${PLATFORM}`)
 }
 
+const CHANNEL = argv.channel
+if ( !CHANNEL ) throw new Error('--channel is required.')
+if ( !(/^[a-zA-Z0-9_-]{1,}$/.test(CHANNEL)) ) throw new Error('Invalid --channel value.')
+
 const AUDIOS_DIRECTORY = getAudiosDirectory(PLATFORM)
 if ( !fs.existsSync(AUDIOS_DIRECTORY) ) {
   fs.mkdirSync(AUDIOS_DIRECTORY, { recursive: true })
 }
 
-const getYouTubeVideos = async () => {
-  const response = await fetch('https://www.youtube.com/@midulive/videos')
+const getYouTubeVideos = async channel => {
+  if ( !channel ) throw new Error('Channel is required')
+  if ( !(/^[a-zA-Z0-9_-]{1,}$/.test(channel)) ) throw new Error('Invalid channel')
+  const response = await fetch(`https://www.youtube.com/@${channel}/videos`)
   const html = await response.text()
   const json = JSON.parse(html?.split?.("ytInitialData = ")?.[1]?.split?.(";</script>")?.[0] ?? null)
   return json?.contents?.twoColumnBrowseResultsRenderer?.tabs?.find(tab => tab.tabRenderer?.selected)?.tabRenderer?.content?.richGridRenderer?.contents?.map?.(item => {
@@ -38,6 +44,7 @@ const getYouTubeVideos = async () => {
     return {
       id: video?.videoId,
       platform: 'youtube',
+      channel,
       title: video?.title?.runs?.map?.(run => run.text)?.join?.('') ?? '',
       published_at: video?.publishedTimeText?.simpleText,
       duration: (hours * 3600) + (minutes * 60) + seconds,
@@ -46,8 +53,10 @@ const getYouTubeVideos = async () => {
   })?.filter?.(i => i !== null) ?? []
 }
 
-const getTwitchVideos = async () => {
-  const { stdout } = await exec('twitch-dl videos midudev --all')
+const getTwitchVideos = async channel => {
+  if ( !channel ) throw new Error('Channel is required')
+  if ( !(/^[a-zA-Z0-9_-]{1,}$/.test(channel)) ) throw new Error('Invalid channel')
+  const { stdout } = await exec(`twitch-dl videos ${channel} --all`)
   return stdout
     ?.split?.('\n\n\n')
     ?.filter?.(r => !r.startsWith('-----'))
@@ -57,6 +66,7 @@ const getTwitchVideos = async () => {
       return {
         id: id.replace('Video ', ''),
         platform: 'twitch',
+        channel,
         title,
         category: category.split(' playing ')?.[1]?.trim?.() ?? '',
         published_at: `${date}T${time}`,
@@ -66,11 +76,11 @@ const getTwitchVideos = async () => {
     }) ?? []
 }
 
-const getVideos = platform => {
+const getVideos = (platform, channel) => {
   if ( platform === 'youtube' ) {
-    return getYouTubeVideos()
+    return getYouTubeVideos(channel)
   } else if ( platform === 'twitch' ) {
-    return getTwitchVideos()
+    return getTwitchVideos(channel)
   }
   throw new Error(`Invalid platform: ${platform}`)
 }
@@ -167,9 +177,11 @@ const downloadVideo = (result, collection, logging = true) => {
   throw new Error(`Invalid platform: ${platform}`)
 }
 
-const results = await getVideos(PLATFORM)
+const results = await getVideos(PLATFORM, CHANNEL)
 
-const mongodb = await MongoClient.connect(process.env.MONGO_CONNECTION_URL)
+const mongodb = new MongoClient(process.env.MONGO_CONNECTION_URL)
+
+await mongodb.connect()
 const collection = mongodb.db('midudev').collection('videos')
 
 if ( argv.parallel ) {

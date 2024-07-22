@@ -12,13 +12,13 @@ dayjs.extend(utc)
 
 const argv = minimist(process.argv.slice(2))
 
-let COUNT = (argv.count ?? '1').toString().trim().toLowerCase()
-if ( !(/^\d+$/.test(COUNT)) ) {
-  throw new Error(`Invalid --count value: ${COUNT}. Must be a number.`)
+let LIMIT = (argv.limit ?? '1').toString().trim().toLowerCase()
+if ( !(/^\d+$/.test(LIMIT)) ) {
+  throw new Error(`Invalid --limit value: ${LIMIT}. Must be a number.`)
 }
-COUNT = Number(COUNT)
-if ( COUNT <= 0 || COUNT > 1000 ) {
-  throw new Error(`Invalid --count value: ${COUNT}. Must be between 1 and 1000.`)
+LIMIT = Number(LIMIT)
+if ( LIMIT <= 0 || LIMIT > 1000 ) {
+  throw new Error(`Invalid --limit value: ${LIMIT}. Must be between 1 and 1000.`)
 }
 
 if ( !process.env.MONGO_CONNECTION_URL ) {
@@ -72,11 +72,12 @@ const cursor = db.collection('videos').find({
     _id: true,
     id: true,
     platform: true,
+    channel: true,
     title: true,
     duration: true,
     url: true,
   },
-  limit: COUNT,
+  limit: LIMIT,
 })
 
 const saveEmbeddings = async (document, embeddingsResult) => {
@@ -90,9 +91,11 @@ const saveEmbeddings = async (document, embeddingsResult) => {
     updated_at: dayjs().utc().toDate(),
     id: document.id,
     platform: document.platform,
+    channel: document.channel,
     title: document.title,
     duration: document.duration,
     url: document.url,
+    index,
     text: values[index],
     embedding,
   })))
