@@ -24,6 +24,14 @@ pip install --no-cache-dir -r requirements.txt
 npm i
 ```
 
+# Descargar modelos con Ollama
+```sh
+ollama pull nomic-embed-text
+```
+```sh
+ollama pull phi3:medium-128k
+```
+
 # Montar con Docker
 
 ## Requerimientos
