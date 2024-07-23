@@ -65,6 +65,21 @@ const getEmbeddings = async paragraphs => {
 const mongodb = await MongoClient.connect(process.env.MONGO_CONNECTION_URL)
 const db = mongodb.db('midudev')
 
+await db.collection('embeddings').createSearchIndex({
+  name: 'vector_index',
+  type: 'vectorSearch',
+  definition: {
+    fields: [
+      {
+        numDimensions: 768,
+        path: 'embedding',
+        similarity: 'cosine',
+        type: 'vector',
+      },
+    ],
+  },
+})
+
 const cursor = db.collection('videos').find({
   transcribed_at: { $exists: true },
   has_embeddings: { $ne: true },
