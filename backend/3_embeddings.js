@@ -7,6 +7,7 @@ import { embedMany } from 'ai'
 import { createOllama } from 'ollama-ai-provider'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { getTranscriptionFilePath } from './config.js'
+import { getDurationText } from './utils.js'
 
 dayjs.extend(utc)
 
@@ -103,7 +104,7 @@ const saveEmbeddings = async (document, embeddingsResult) => {
 
 for await ( const document of cursor ) {
   try {
-    console.log(`[+] ${document.title.substring(0, 140)}...`)
+    console.log(`[+] ${document.title.substring(0, 140)} (${getDurationText(document.duration)})`)
     const output = getTranscriptionFilePath(document.platform, document.id)
     if ( !fs.existsSync(output) ) {
       console.log('    Transcription file not found.')

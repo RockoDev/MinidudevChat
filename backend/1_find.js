@@ -7,6 +7,7 @@ import { MongoClient } from 'mongodb'
 import minimist from 'minimist'
 import cliProgress from 'cli-progress'
 import { getAudiosDirectory } from './config.js'
+import { getDurationText } from './utils.js'
 
 dayjs.extend(utc)
 
@@ -70,7 +71,7 @@ const getTwitchVideos = async channel => {
         title,
         category: category.split(' playing ')?.[1]?.trim?.() ?? '',
         published_at: `${date}T${time}`,
-        duration: `${hours.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`,
+        duration: (hours * 3600) + (minutes * 60),
         url,
       }
     }) ?? []
@@ -212,7 +213,7 @@ if ( argv.parallel ) {
 } else {
   // Running in sequence
   for ( const [index, result] of Object.entries(results) ) {
-    console.log(`[+] (${Number(index)+1}/${results.length}) ${result.title}`)
+    console.log(`[+] (${Number(index)+1}/${results.length}) ${result.title} (${getDurationText(result.duration)})`)
     await downloadVideo(result, collection, true)
   }
 }

@@ -5,6 +5,7 @@ import { MongoClient } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import { getAudioFilePath, getTranscriptionFilePath } from './config.js'
+import { getDurationText } from './utils.js'
 
 dayjs.extend(utc)
 
@@ -30,14 +31,6 @@ const spawn = async (...args) => {
       code === 0 ? resolve() : reject(new Error(`Process exited with code ${code}`))
     })
   })
-}
-
-const getDurationText = duration => {
-  const hours = Math.floor(duration / 3600)
-  const minutes = Math.floor((duration % 3600) / 60)
-  const seconds = duration % 60
-  if ( hours > 0 ) return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
 const mongodb = new MongoClient(process.env.MONGO_CONNECTION_URL)
