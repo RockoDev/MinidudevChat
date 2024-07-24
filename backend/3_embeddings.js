@@ -11,9 +11,12 @@ import { getDurationText } from './utils.js'
 
 dayjs.extend(utc)
 
-const argv = minimist(process.argv.slice(2))
+const argv = minimist(process.argv.slice(2), {
+  boolean: [ 'create-index' ],
+  default: { limit: 5 },
+})
 
-let LIMIT = (argv.limit ?? '1').toString().trim().toLowerCase()
+let LIMIT = (argv.limit ?? '5').toString().trim().toLowerCase()
 if ( !(/^\d+$/.test(LIMIT)) ) {
   throw new Error(`Invalid --limit value: ${LIMIT}. Must be a number.`)
 }
@@ -65,20 +68,23 @@ const getEmbeddings = async paragraphs => {
 const mongodb = await MongoClient.connect(process.env.MONGO_CONNECTION_URL)
 const db = mongodb.db('midudev')
 
-await db.collection('embeddings').createSearchIndex({
-  name: 'vector_index',
-  type: 'vectorSearch',
-  definition: {
-    fields: [
-      {
-        numDimensions: 768,
-        path: 'embedding',
-        similarity: 'cosine',
-        type: 'vector',
-      },
-    ],
-  },
-})
+if ( argv['create-index'] ) {
+  console.log('Creating index...')
+  await db.collection('embeddings').createSearchIndex({
+    name: 'vector_index',
+    type: 'vectorSearch',
+    definition: {
+      fields: [
+        {
+          numDimensions: 768,
+          path: 'embedding',
+          similarity: 'cosine',
+          type: 'vector',
+        },
+      ],
+    },
+  })
+}
 
 const cursor = db.collection('videos').find({
   transcribed_at: { $exists: true },

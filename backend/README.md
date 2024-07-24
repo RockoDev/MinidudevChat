@@ -107,6 +107,7 @@ node --env-file=.env 3_embeddings.js --limit 5
 ```
 Parámetros:
 > - `--limit` Default: 5. Indica el número máximo de transcripciones de las que se generarán embeddings.
+> - `--create-index` Si se agrega este parámetro se creará el vector search index.
 
 Con Docker:
 ```sh
