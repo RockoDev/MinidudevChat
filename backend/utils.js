@@ -1,3 +1,5 @@
+import child_process from 'node:child_process'
+
 export const unique = array => array.filter((value, index, array) => array.indexOf(value) === index)
 
 export const range = (start, len) => new Array(len).fill().map((_, i) => start + i)
@@ -10,4 +12,13 @@ export const getDurationText = duration => {
   const seconds = duration % 60
   if ( hours > 0 ) return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+export const spawn = async (...args) => {
+  return new Promise((resolve, reject) => {
+    const process = child_process.spawn(...args)
+    process.on('close', code => {
+      code === 0 ? resolve() : reject(new Error(`Process exited with code ${code}`))
+    })
+  })
 }

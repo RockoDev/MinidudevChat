@@ -1,11 +1,10 @@
 import fs from 'node:fs'
 import minimist from 'minimist'
-import child_process from 'node:child_process'
 import { MongoClient } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import { getAudioFilePath, getTranscriptionFilePath } from './config.js'
-import { getDurationText } from './utils.js'
+import { getDurationText, spawn } from './utils.js'
 
 dayjs.extend(utc)
 
@@ -22,15 +21,6 @@ if ( LIMIT <= 0 || LIMIT > 1000 ) {
 
 if ( !process.env.MONGO_CONNECTION_URL ) {
   throw new Error('MONGO_CONNECTION_URL environment variable is required.')
-}
-
-const spawn = async (...args) => {
-  return new Promise((resolve, reject) => {
-    const process = child_process.spawn(...args)
-    process.on('close', code => {
-      code === 0 ? resolve() : reject(new Error(`Process exited with code ${code}`))
-    })
-  })
 }
 
 const mongodb = new MongoClient(process.env.MONGO_CONNECTION_URL)

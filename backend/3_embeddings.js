@@ -3,11 +3,9 @@ import minimist from 'minimist'
 import { MongoClient } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
-import { embedMany } from 'ai'
-import { createOllama } from 'ollama-ai-provider'
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { getTranscriptionFilePath } from './config.js'
 import { getDurationText } from './utils.js'
+import { getEmbeddings } from './services/embeddings.js'
 
 dayjs.extend(utc)
 
@@ -29,14 +27,6 @@ if ( !process.env.MONGO_CONNECTION_URL ) {
   throw new Error('MONGO_CONNECTION_URL environment variable is required.')
 }
 
-if ( !process.env.OLLAMA_BASE_URL ) {
-  throw new Error('OLLAMA_BASE_URL environment variable is required.')
-}
-
-const ollama = createOllama({
-  baseURL: `${process.env.OLLAMA_BASE_URL}/api`,
-})
-
 const getParagraphs = async file => {
   const transcription = JSON.parse(await fs.promises.readFile(file, { encoding: 'utf-8' }))
   const paragraphs = []
@@ -50,19 +40,6 @@ const getParagraphs = async file => {
     }
   })
   return paragraphs
-}
-
-const getEmbeddings = async paragraphs => {
-  const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
-    chunkOverlap: 0,
-    // separators: ["\n\n", "\n", " ", ""],
-  })
-  const chunks = await splitter.splitText(paragraphs.join('\n'))
-  return embedMany({
-    model: ollama.embedding('nomic-embed-text'),
-    values: chunks,
-  })
 }
 
 const mongodb = await MongoClient.connect(process.env.MONGO_CONNECTION_URL)
