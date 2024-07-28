@@ -18,11 +18,8 @@ const { messages, input, handleSubmit } = useChat()
           <span class="text-center text-xs text-gray-600">@midudev</span>
         </div>
       </div>
-      <div class="p-4 overflow-y-auto">
-        <div v-for="message in messages" :key="message.id" class="whitespace-pre-wrap">
-          {{ message.role === 'user' ? 'User: ' : 'AI: ' }}
-          {{ message.content }}
-        </div>
+      <div class="flex flex-col p-4 items-start gap-4 overflow-y-scroll">
+        <ChatMessage v-for="message in messages" :key="message.id" :message />
       </div>
       <div class="px-4 h-12">
         <form @submit="handleSubmit">
