@@ -2,7 +2,7 @@ import { embed, embedMany } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { createOllama } from 'ollama-ai-provider'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
-import { EMBEDDINGS_PROVIDER, EMBEDDINGS_MODEL } from '../config'
+import { EMBEDDINGS_PROVIDER, EMBEDDINGS_MODEL } from '../config.js'
 
 export const getEmbeddingWithOpenAI = async text => {
   if ( !process.env.OPENAI_API_KEY ) {
@@ -36,9 +36,9 @@ export const getEmbeddingsWithOpenAI = async paragraphs => {
     throw new Error('OPENAI_API_KEY environment variable is required')
   }
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
+    chunkSize: 1000,
     chunkOverlap: 0,
-    // separators: ["\n\n", "\n", " ", ""],
+    separators: ["\n\n", "\n", "(?<=\. )", " "],
   })
   const chunks = await splitter.splitText(paragraphs.join('\n'))
   return embedMany({
@@ -52,9 +52,9 @@ export const getEmbeddingsWithOllama = async paragraphs => {
   if ( process.env.OLLAMA_BASE_URL ) options.baseURL = `${process.env.OLLAMA_BASE_URL}/api`
   const ollama = createOllama(options)
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
+    chunkSize: 1000,
     chunkOverlap: 0,
-    // separators: ["\n\n", "\n", " ", ""],
+    separators: ["\n\n", "\n", "(?<=\. )", " "],
   })
   const chunks = await splitter.splitText(paragraphs.join('\n'))
   return embedMany({

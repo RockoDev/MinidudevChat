@@ -3,7 +3,7 @@ import minimist from 'minimist'
 import { MongoClient } from 'mongodb'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
-import { getTranscriptionFilePath } from './config.js'
+import { getTranscriptionFilePath, EMBEDDINGS_DIMENSIONS } from './config.js'
 import { getDurationText } from './utils.js'
 import { getEmbeddings } from './services/embeddings.js'
 
@@ -53,7 +53,7 @@ if ( argv['create-index'] ) {
     definition: {
       fields: [
         {
-          numDimensions: 768,
+          numDimensions: EMBEDDINGS_DIMENSIONS,
           path: 'embedding',
           similarity: 'cosine',
           type: 'vector',

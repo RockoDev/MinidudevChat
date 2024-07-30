@@ -5,3 +5,4 @@ export const getTranscriptionFilePath = (platform, id) => `${getTranscriptionsDi
 
 export const EMBEDDINGS_PROVIDER = process.env.EMBEDDINGS_PROVIDER ?? 'ollama'
 export const EMBEDDINGS_MODEL = process.env.EMBEDDINGS_MODEL ?? 'nomic-embed-text'
+export const EMBEDDINGS_DIMENSIONS = parseInt(process.env.EMBEDDINGS_DIMENSIONS ?? 768)
