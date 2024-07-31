@@ -7,6 +7,13 @@ const $messages = ref<HTMLDivElement | null>(null)
 const { messages, input, handleSubmit, isLoading } = useChat({
   onResponse: () => { isWriting.value = true },
   onFinish: () => { isWriting.value = false },
+  initialMessages: [
+    {
+      id: '1',
+      role: 'assistant',
+      content: '¡Hola! Soy Midudev. ¿En qué puedo ayudarte?',
+    },
+  ],
 })
 
 const isThinking = computed(() => isLoading.value && !isWriting.value)
@@ -24,6 +31,11 @@ watch(messages, () => {
     })
   }, 100)
 })
+
+const onSubmit = (event: Event) => {
+  event.preventDefault()
+  if ( !isLoading.value ) handleSubmit(event)
+}
 </script>
 
 <template>
@@ -44,10 +56,10 @@ watch(messages, () => {
         <ChatMessage v-for="message in items" :key="message.id" :message />
       </div>
       <div class="px-4 h-12">
-        <form autocomplete="off" @submit="handleSubmit">
+        <form autocomplete="off" @submit="onSubmit">
           <div class="flex items-center gap-2">
-            <input type="text" v-model="input" :disabled="isLoading" autofocus role="textbox" autocomplete="off" autocapitalize="off" aria-autocomplete="none" autocorrect="off" placeholder="Pregunta algo..." class="py-2 px-4 w-full h-12 flex-1 rounded-3xl outline-cyan-500 bg-[#f3f4f6]" />
-            <button type="submit" class="p-2 rounded-full text-white bg-cyan-500">
+            <input type="text" v-model="input" autofocus role="textbox" autocomplete="off" autocapitalize="off" aria-autocomplete="none" autocorrect="off" placeholder="Pregunta algo..." class="py-2 px-4 w-full h-12 flex-1 rounded-3xl outline-cyan-500 bg-[#f3f4f6]" />
+            <button type="submit" class="p-2 rounded-full text-white bg-cyan-500" :class="{'opacity-25': isLoading}">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-8">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                 <path d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z" />

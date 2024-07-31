@@ -4,6 +4,23 @@
 
 @layer base {
   body {
-    background-color: #f1f1f1;
+    background-color: #000;
+  }
+  .message p:not(:last-child),
+  .message ul:not(:last-child),
+  .message ol:not(:last-child),
+  .message ul li:not(:last-child),
+  .message ol li:not(:last-child) {
+    margin-bottom: 1em;
+  }
+  .message ul,
+  .message ol {
+    list-style: disc;
+    padding-left: 1em;
+  }
+  .message a {
+    color: #06b6d4;
+    font-weight: bold;
+    text-decoration: none;
   }
 }
