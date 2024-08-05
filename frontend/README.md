@@ -1,75 +1,32 @@
-# Nuxt 3 Minimal Starter
+# Frontend
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## Requerimientos
+- [NodeJS 20](https://nodejs.org/).
 
-## Setup
+## Configuración
+1. Crear copia del archivo `.env.example` con el nombre `.env`
+```sh
+cp .env.example .env
+```
+2. Cambiar las variables que sean necesarias para conectarse a MongoDB y Ollama.
+3. Seleccionar las plataformas (openai / ollama) y los modelos que se usarán.
 
-Make sure to install the dependencies:
-
+## Instalar dependencias de NodeJS
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
+## Montar servidor de desarrollo
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
-
+## Preparar archivos para producción
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
-
+## Ejecutar servidor en producción
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+node .output/server/index.mjs
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
