@@ -3,16 +3,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
   runtimeConfig: {
-    openai: {
-      // apikey: process.env.OPENAI_API_KEY,
-    },
+    openai: {},
     ollama: {
       base_url: process.env.OLLAMA_BASE_URL,
     },
@@ -28,8 +28,10 @@ export default defineNuxtConfig({
       model: process.env.AI_MODEL,
     },
   },
+
   app: {
     head: {
+      title: 'Minidudev Chat',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, interactive-widget=resizes-content' },

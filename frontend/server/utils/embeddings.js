@@ -1,13 +1,11 @@
 import { embed } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { createOllama } from 'ollama-ai-provider'
 
 const config = useRuntimeConfig()
 
-export const getEmbeddingWithOpenAI = async text => {
-  // if ( !config.openai.apikey ) {
-  //   throw new Error('OPENAI_API_KEY environment variable is required')
-  // }
+export const getEmbeddingWithOpenAI = async (text, apiKey) => {
+  const openai = createOpenAI({apiKey})
   const { embedding } = await embed({
     model: openai.embedding(config.embeddings.model),
     value: text,
@@ -26,7 +24,7 @@ export const getEmbeddingWithOllama = async text => {
   return embedding
 }
 
-export const getEmbedding = async text => ({
+export const getEmbedding = async (text, apiKey) => ({
   openai: getEmbeddingWithOpenAI,
   ollama: getEmbeddingWithOllama,
-})?.[config.embeddings.provider]?.(text) ?? null
+})?.[config.embeddings.provider]?.(text, apiKey) ?? null

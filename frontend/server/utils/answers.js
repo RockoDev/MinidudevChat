@@ -2,11 +2,11 @@ import { MongoClient } from 'mongodb'
 
 const config = useRuntimeConfig()
 
-export const getQuestionContext = async question => {
+export const getQuestionContext = async (question, apiKey) => {
   if ( !question ) {
     throw new Error('Missing question')
   }
-  const embedding = await getEmbedding(question)
+  const embedding = await getEmbedding(question, apiKey)
   if ( (embedding?.length ?? 0) <= 0 ) {
     throw new Error('Invalid embedding')
   }

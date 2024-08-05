@@ -4,7 +4,15 @@
 
 @layer base {
   body {
-    background-color: #000;
+    position: relative;
+    background-color: #e4e4e4;
+  }
+  a {
+    color: #06b6d4;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
   }
   .message p:not(:last-child),
   .message ul:not(:last-child),
