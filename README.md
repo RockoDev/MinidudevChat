@@ -6,6 +6,8 @@
 
 Estás en el lugar indicado. Aquí podrás hacerle preguntas directamente a Midudev y obtener respuestas rápidas y precisas gracias a nuestro avanzado sistema de clonación de conciencia ™.
 
+[¡Comienza a preguntar!](https://minidudev.rocko.dev/)
+
 ## Instalacion
 
 ### Frontend
@@ -14,3 +16,4 @@ Estás en el lugar indicado. Aquí podrás hacerle preguntas directamente a Midu
 ### Backend
 [Instrucciones para montar el backend](backend/README.md)
 
+<!-- ![Minidudev](minidudev.png) -->
