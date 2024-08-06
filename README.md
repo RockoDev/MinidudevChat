@@ -8,6 +8,10 @@ Estás en el lugar indicado. Aquí podrás hacerle preguntas directamente a Midu
 
 [¡Comienza a preguntar!](https://minidudev.rocko.dev/)
 
+> [!IMPORTANT]
+> Aparentemente existe un bug en el SDK de Vue, y a veces no se muestran los mensajes completos. (El evento onFinish tampoco se ejecuta).\
+> Estoy buscando alguna solución.
+
 ## Instalacion
 
 ### Frontend
@@ -15,5 +19,3 @@ Estás en el lugar indicado. Aquí podrás hacerle preguntas directamente a Midu
 
 ### Backend
 [Instrucciones para montar el backend](backend/README.md)
-
-<!-- ![Minidudev](minidudev.png) -->
