@@ -10,6 +10,8 @@ const $input = ref<HTMLInputElement | null>(null)
 const { messages, input, handleSubmit, isLoading } = useChat({
   onResponse: () => { isWriting.value = true },
   onFinish: () => { isWriting.value = false },
+  // streamProtocol: 'text',
+  streamMode: 'text',
   initialMessages: [
     {
       id: '1',

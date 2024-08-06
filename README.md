@@ -9,8 +9,9 @@ Estás en el lugar indicado. Aquí podrás hacerle preguntas directamente a Midu
 [¡Comienza a preguntar!](https://minidudev.rocko.dev/)
 
 > [!IMPORTANT]
-> Aparentemente existe un bug en el SDK de Vue, y a veces no se muestran los mensajes completos. (El evento onFinish tampoco se ejecuta).\
-> Estoy buscando alguna solución.
+> Aparentemente existe un bug en el SDK de Vue y a veces no se muestran los mensajes completos usando el data stream protocol.\
+> Por ahora uso el text stream protocol que funciona mejor, aunque causa otros efectos un poco raros.\
+> Estoy buscando alguna solución mejor.
 
 ## Instalacion
 

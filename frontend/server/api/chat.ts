@@ -56,7 +56,7 @@ export default defineLazyEventHandler(async () => {
       ].join('\n'),
       messages,
     })
-    return result.toAIStreamResponse()
+    return result.toTextStreamResponse()
   })
 
 })
