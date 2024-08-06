@@ -18,6 +18,17 @@ const { messages, input, handleSubmit, isLoading } = useChat({
       role: 'assistant',
       content: '¡Hola! Soy Midudev. ¿En qué puedo ayudarte?',
     },
+    {
+      id: '2',
+      role: 'assistant',
+      content: [
+        'Puedes hacerme preguntas como:\n',
+        '- ¿Cuánto debo cobrar como freelance?\n',
+        '- ¿Qué pasó con el plan de eliminar las cookies de Google Chrome?\n',
+        '- ¿Cómo te fue en tu viaje a Japón?\n',
+        '- ¿Qué pasó con la chica que fue despedida y decidió vengarse?\n',
+      ].join('')
+    },
   ],
 })
 
