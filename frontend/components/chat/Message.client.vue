@@ -22,7 +22,7 @@ const message = computed(() => {
 
 <template>
   <div v-if="isUser" class="flex w-full items-start justify-end">
-    <div class="inline-block p-2 rounded-md text-sm whitespace-nowrap bg-cyan-500 text-white">{{ message }}</div>
+    <div class="inline-block p-2 rounded-md text-sm bg-cyan-500 text-white">{{ message }}</div>
   </div>
   <div v-else-if="isThinking" class="grid grid-cols-[auto_1fr] gap-4">
     <div>
