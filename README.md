@@ -18,10 +18,3 @@ Estás en el lugar indicado. Aquí podrás hacerle preguntas directamente a Midu
 - Todos los servicios necesarios para montarlo en local y producción: MongoDB, Ollama, Python y NodeJS usando Docker.
 
 [Instrucciones para montar el backend](backend/README.md)
-
-<br/><br/>
-
-> [!IMPORTANT]
-> Aparentemente existe un bug en el SDK de Vue y a veces no se muestran los mensajes completos usando el data stream protocol.\
-> Por ahora uso el text stream protocol que funciona mejor, aunque causa otros efectos un poco raros.\
-> Estoy buscando alguna solución mejor.
